@@ -7,21 +7,27 @@ $(document).ready(function() {
   app.handleSubmit = function() {
     let $text = $('#message');
     let pattern = /username=(.*)/;
+    let username;
+    if (window.location.search === '') {
+      username = 'default';
+    } else {
+      username = decodeURIComponent(pattern.exec(window.location.search)[1]);
+    }
     let message = {
-      username: decodeURIComponent(pattern.exec(window.location.search)[1]),
+      username: username,
       text: $text.val(),
       roomname: $('#roomSelect').val()
     };
     app.send(message);
   };
 
-  $('#send').on('submit', function(event) {
-    event.preventDefault();
-    app.handleSubmit();
-  });
   
   app.init = function() {
     let fetchInterval = window.setInterval( () => app.fetch(), 1000);
+    $('#send').on('submit', function(event) {
+      event.preventDefault();
+      app.handleSubmit();
+    });
   };
 
   app.send = function(message) {

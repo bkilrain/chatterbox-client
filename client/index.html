@@ -25,7 +25,7 @@
         <input class="roomSelectText" type="text" name="roomName">
         <input type="button" value="Submit" onclick="app.addRoom()">
       </form>
-      <select id="roomSelect">
+      <select id="roomSelect" onchange="app.changeRoom()">
         <option>Lobby</option>
       </select>
     </div>
