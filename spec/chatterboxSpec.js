@@ -74,6 +74,11 @@ describe('chatterbox', function() {
         expect($('#chats').children().length).to.equal(0);
       });
 
+      it('should be able to add rooms to the DOM', function() {
+        app.addRoom('superLobby');
+        expect($('#roomSelect').children().length).to.equal(1);
+      });
+      
       it('should be able to add messages to the DOM', function() {
         var message = {
           username: 'Mel Brooks',
@@ -86,11 +91,6 @@ describe('chatterbox', function() {
         expect($('#chats').children().length).to.equal(1);
       });
 
-      it('should be able to add rooms to the DOM', function() {
-        app.addRoom('superLobby');
-
-        expect($('#roomSelect').children().length).to.equal(1);
-      });
 
     });
 

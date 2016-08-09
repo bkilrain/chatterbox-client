@@ -24,11 +24,11 @@ $(document).ready(function() {
   
   app.init = function() {
     let fetchInterval = window.setInterval( () => app.fetch(), 1000);
+  };
     $('#send').on('submit', function(event) {
       event.preventDefault();
       app.handleSubmit();
     });
-  };
 
   app.send = function(message) {
     $.ajax({
