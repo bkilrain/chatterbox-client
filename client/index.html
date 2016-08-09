@@ -16,9 +16,9 @@
     <div id="main">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
-      <form>
-        <input class="messageInput" type="text" name="chat message"><br>
-        <input type="button" value="Submit" onclick="app.createMessage()">
+      <form id="send">
+        <input id="message" class="messageInput" type="text" name="chat message"><br>
+        <input class="submit" type="submit" value="Submit">
         <input type='button' value='Clear Messages' onclick='app.clearMessages()'>
       </form>
       <form>

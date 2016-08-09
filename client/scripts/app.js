@@ -2,15 +2,24 @@ let app = {};
 
 $(document).ready(function() {
   let d = new Date();
-  app.createMessage = function() {
-    let $text = $('.messageInput');
+
+  app.handleSubmit = function() {
+    let $text = $('#message');
     let message = {
-      username: 'Meow',
+      username: 'ChrisPicato',
       text: $text.val(),
       roomname: '4chan'
     };
     app.send(message);
   };
+
+  $('.submit').on('submit', function(event) {
+    // event.preventDefault();
+    alert('why');
+    // debugger;
+    app.handleSubmit();
+    
+  });
   
   app.init = function() {
     let fetchInterval = window.setInterval( () => app.fetch(), 1000);
@@ -23,7 +32,7 @@ $(document).ready(function() {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function (data) {
-        $('.messageInput').val('');
+        $('#message').val('');
       },
       error: function (data) {
         console.error('chatterbox: Failed to send message', data);
@@ -37,11 +46,6 @@ $(document).ready(function() {
       for (let i = 0; i < jsonObj.results.length; i++) {
         app.addMessage(jsonObj.results[i]);
       }
-    };
-
-    let addToDOM = function(data) {
-      let $text = $('<p></p>').text(`${new Date(data.createdAt)} Username: ${data.username} Message: ${data.text}`);
-      $('#chats').prepend($text);
     };
 
     $.ajax({
@@ -69,17 +73,31 @@ $(document).ready(function() {
   };
 
   app.addMessage = function(data) {
-    let $text = $('<p></p>').text(`${new Date(data.createdAt)} Username: ${data.username} Message: ${data.text}`);
-    $('#chats').prepend($text);
+    let $div = $('<div><a href="#" class="username"></a><p></p></div>');
+    $('#chats').prepend($div);
+    let username = `${data.username}`;
+    $('#chats div:first-child a').text(username);
+    let message = `Message: ${data.text}`;
+    $('#chats div:first-child p').text(message);
+    $('.username').on('click', function(event) {
+      let $targetUsername = $(event.target).text();
+      app.addFriend($targetUsername);
+      event.stopImmediatePropagation();
+    });
   };
 
-  app.addRoom = function(data) {
+  app.addRoom = function() {
     let roomName = ($('.roomSelectText')).val();
     let $room = $('<option></option>').text(roomName).val(roomName);
     $('#roomSelect').append($room);
   };
 
+  app.addFriend = function(targetUsername) {
+    console.log(targetUsername);
+  };
+
   app.server = 'https://api.parse.com/1/classes/messages';
 
-  app.init();  
+  app.init();
+
 });
