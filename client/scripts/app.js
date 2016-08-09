@@ -5,20 +5,18 @@ $(document).ready(function() {
 
   app.handleSubmit = function() {
     let $text = $('#message');
+    let pattern = /username=(.*)/;
     let message = {
-      username: 'ChrisPicato',
+      username: decodeURIComponent(pattern.exec(window.location.search)[1]),
       text: $text.val(),
       roomname: '4chan'
     };
     app.send(message);
   };
 
-  $('.submit').on('submit', function(event) {
-    // event.preventDefault();
-    alert('why');
-    // debugger;
+  $('#send').on('submit', function(event) {
+    event.preventDefault();
     app.handleSubmit();
-    
   });
   
   app.init = function() {
@@ -41,7 +39,6 @@ $(document).ready(function() {
   };
 
   app.fetch = function() {
-    // console.log('fetch is running');
     let parseData = function(jsonObj) {
       for (let i = 0; i < jsonObj.results.length; i++) {
         app.addMessage(jsonObj.results[i]);
