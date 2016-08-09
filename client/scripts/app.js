@@ -9,7 +9,7 @@ $(document).ready(function() {
     let message = {
       username: decodeURIComponent(pattern.exec(window.location.search)[1]),
       text: $text.val(),
-      roomname: '4chan'
+      roomname: $('#roomSelect').val()
     };
     app.send(message);
   };
@@ -72,6 +72,7 @@ $(document).ready(function() {
   app.addMessage = function(data) {
     let $div = $('<div><a href="#" class="username"></a><p></p></div>');
     $('#chats').prepend($div);
+    $('#chats div:first-child').addClass(data.roomname);
     let username = `${data.username}`;
     $('#chats div:first-child a').text(username);
     let message = `Message: ${data.text}`;
@@ -81,6 +82,7 @@ $(document).ready(function() {
       app.addFriend($targetUsername);
       event.stopImmediatePropagation();
     });
+
   };
 
   app.addRoom = function() {
