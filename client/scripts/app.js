@@ -1,6 +1,7 @@
 let app = {};
 
 $(document).ready(function() {
+  app.server = 'https://api.parse.com/1/classes/messages';
   let d = new Date();
 
   app.handleSubmit = function() {
@@ -25,7 +26,7 @@ $(document).ready(function() {
 
   app.send = function(message) {
     $.ajax({
-      url: 'https://api.parse.com/1/classes/messages',
+      url: app.server,
       type: 'POST',
       data: JSON.stringify(message),
       contentType: 'application/json',
@@ -47,7 +48,7 @@ $(document).ready(function() {
 
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
-      url: 'https://api.parse.com/1/classes/messages',
+      url: app.server,
       type: 'GET',
       data: {
         'order': '-createdAt',
@@ -83,19 +84,33 @@ $(document).ready(function() {
       event.stopImmediatePropagation();
     });
 
+    addRoomSelect(data.roomname);
   };
 
-  app.addRoom = function() {
-    let roomName = ($('.roomSelectText')).val();
-    let $room = $('<option></option>').text(roomName).val(roomName);
-    $('#roomSelect').append($room);
+  let addRoomSelect = function(roomname) {
+    let optionExists = false;
+    $('#roomSelect').find('option').each(function(opt) {
+      if (this.text === roomname) {
+        optionExists = true;
+      }
+    });
+    if (!optionExists) {
+      app.addRoom(roomname);
+    }
+  };
+
+  app.addRoom = function(roomName) {
+    roomName = roomName || ($('.roomSelectText')).val();
+    if (roomName.trim() !== '') {
+      let $room = $('<option></option>').text(roomName).val(roomName);
+      $('#roomSelect').append($room);
+    }
   };
 
   app.addFriend = function(targetUsername) {
     console.log(targetUsername);
   };
 
-  app.server = 'https://api.parse.com/1/classes/messages';
 
   app.init();
 
