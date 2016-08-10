@@ -3,6 +3,23 @@ let app = {};
 $(document).ready(function() {
   app.server = 'https://api.parse.com/1/classes/messages';
   let d = new Date();
+  let lastObjectID = '';
+  let roomName = 'Lobby';
+
+  $('#send').on('submit', function(event) {
+    event.preventDefault();
+    app.handleSubmit();
+  });
+
+  $('#roomSelect').on('change', function(event) {
+    roomName = event.target.selectedOptions[0].innerText;
+    hideAllChatMessages();
+    showElement();
+  });
+
+  app.init = function() {
+    let fetchInterval = window.setInterval( () => app.fetch(), 1000);
+  };
 
   app.handleSubmit = function() {
     let $text = $('#message');
@@ -15,13 +32,14 @@ $(document).ready(function() {
     app.send(message);
   };
 
-  $('#send').on('submit', function(event) {
-    event.preventDefault();
-    app.handleSubmit();
-  });
-  
-  app.init = function() {
-    let fetchInterval = window.setInterval( () => app.fetch(), 1000);
+  let hideAllChatMessages = function() {
+    $('#chats div').hide();
+  };
+
+  let showElement = function() {
+    $('#chats div').filter(function() {
+      return $(this).hasClass(roomName);
+    }).show();
   };
 
   app.send = function(message) {
@@ -39,13 +57,21 @@ $(document).ready(function() {
     });
   };
 
-  app.fetch = function() {
-    let parseData = function(jsonObj) {
+  let parseData = function(jsonObj) {
+    //debugger;
+    if (jsonObj.results.length > 0) {
       for (let i = 0; i < jsonObj.results.length; i++) {
-        app.addMessage(jsonObj.results[i]);
+        if (jsonObj.results[i].objectId !== lastObjectID) {
+          app.addMessage(jsonObj.results[i]);
+        } else {
+          break;
+        }
       }
-    };
+      lastObjectID = jsonObj.results[0].objectId;
+    }
+  };
 
+  app.fetch = function() {
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
       url: app.server,
@@ -78,6 +104,7 @@ $(document).ready(function() {
     $('#chats div:first-child a').text(username);
     let message = `Message: ${data.text}`;
     $('#chats div:first-child p').text(message);
+
     $('.username').on('click', function(event) {
       let $targetUsername = $(event.target).text();
       app.addFriend($targetUsername);
@@ -85,6 +112,7 @@ $(document).ready(function() {
     });
 
     addRoomSelect(data.roomname);
+    showElement();
   };
 
   let addRoomSelect = function(roomname) {
@@ -99,10 +127,10 @@ $(document).ready(function() {
     }
   };
 
-  app.addRoom = function(roomName) {
-    roomName = roomName || ($('.roomSelectText')).val();
-    if (roomName.trim() !== '') {
-      let $room = $('<option></option>').text(roomName).val(roomName);
+  app.addRoom = function(localRoomName) {
+    localRoomName = localRoomName || ($('.roomSelectText')).val();
+    if (localRoomName.trim() !== '') {
+      let $room = $('<option></option>').text(localRoomName).val(localRoomName);
       $('#roomSelect').append($room);
     }
   };
@@ -111,7 +139,5 @@ $(document).ready(function() {
     console.log(targetUsername);
   };
 
-
   app.init();
-
 });
