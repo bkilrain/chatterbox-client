@@ -15,8 +15,14 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      <!-- Your HTML goes here! -->
+      <form id="messageSend">
+        <input type="text" id="msg" name="msg" />
+        <button type="submit" id="submitMsg">Send!</button>
+      </form>
     </div>
     <div id="chats"></div>
+    <script> $(function(){
+        app.init()
+      }); </script>
   </body>
 </html>
