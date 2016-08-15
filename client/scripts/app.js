@@ -1,123 +1,132 @@
-let app = {};
 
-$(document).ready(function() {
-  app.server = 'https://api.parse.com/1/classes/messages';
-  let d = new Date();
+let app = {
+  server: 'https://api.parse.com/1/classes/messages',
+  username: 'anonymous',
+  roomname: 'lobby', 
+  messages: [],
+  $newroom: $('<option />'),
+  friends: {},
 
-  app.handleSubmit = function() {
-    let $text = $('#message');
-    let pattern = /username=(.*)/;
-    let username;
-    if (window.location.search === '') {
-      username = 'default';
-    } else {
-      username = decodeURIComponent(pattern.exec(window.location.search)[1]);
-    }
-    let message = {
-      username: username,
-      text: $text.val(),
-      roomname: $('#roomSelect').val()
-    };
-    app.send(message);
-  };
+  init: function() {
+    app.username = window.location.search.substring(10);
+    // setInterval(app.fetch, 1000);
 
-  
-  app.init = function() {
-    let fetchInterval = window.setInterval( () => app.fetch(), 1000);
-  };
-    $('#send').on('submit', function(event) {
-      event.preventDefault();
-      app.handleSubmit();
-    });
+    $('#messageSend').on('submit', app.handleSubmit);
+    $('select').on('change', app.changeRoom);
+    $('#chats').on('click', '.username', app.addFriend);
 
-  app.send = function(message) {
+
+  },
+  send: function(message) {
     $.ajax({
       url: app.server,
       type: 'POST',
       data: JSON.stringify(message),
-      contentType: 'application/json',
       success: function (data) {
-        $('#message').val('');
       },
       error: function (data) {
+        // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
         console.error('chatterbox: Failed to send message', data);
       }
     });
-  };
+  },
 
-  app.fetch = function() {
-    let parseData = function(jsonObj) {
-      for (let i = 0; i < jsonObj.results.length; i++) {
-        app.addMessage(jsonObj.results[i]);
-      }
-    };
-
+  fetch: function() {
     $.ajax({
-      // This is the url you should use to communicate with the parse API server.
       url: app.server,
       type: 'GET',
       data: {
-        'order': '-createdAt',
-        'where': `{"createdAt":{"$gte":{"__type":"Date","iso":"${d.toISOString()}"}}}`
+        order: '-createdAt'
       },
       contentType: 'application/json',
       success: function (data) {
-        parseData(data);
-        d = new Date();
+        app.messages = data.results;
+        app.addMessages(app.messages);
+        app.renderRoomNames();
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
         console.error('chatterbox: Failed to fetch message', data);
       }
     });
-  };
-
-  app.clearMessages = function() {
-    $('#chats').children().remove();
-  };
-
-  app.addMessage = function(data) {
-    let $div = $('<div><a href="#" class="username"></a><p></p></div>');
-    $('#chats').prepend($div);
-    $('#chats div:first-child').addClass(data.roomname);
-    let username = `${data.username}`;
-    $('#chats div:first-child a').text(username);
-    let message = `Message: ${data.text}`;
-    $('#chats div:first-child p').text(message);
-    $('.username').on('click', function(event) {
-      let $targetUsername = $(event.target).text();
-      app.addFriend($targetUsername);
-      event.stopImmediatePropagation();
+  },
+  addMessages: function(messageArray) {
+    app.clearMessages();
+    let roomFiltered = messageArray.filter(function(msg) {
+      return msg.roomname === app.roomname;
     });
+    roomFiltered.forEach(function(msg) {
+      app.addMessage(msg);
+    });
+  },
+  addMessage: function(message) {
+    let $chat = $('<div class="chat" />');
+    let $username = $('<span class="username" />');
+    $chat.addClass(message.roomname);
+    $username
+      .text(message.username + ': ')
+      .appendTo($chat)
+      .data('username', message.username);
 
-    addRoomSelect(data.roomname);
-  };
+    let $message = $('<br><span />')
+    $message
+      .text(message.text)
+      .appendTo($chat);
 
-  let addRoomSelect = function(roomname) {
-    let optionExists = false;
-    $('#roomSelect').find('option').each(function(opt) {
-      if (this.text === roomname) {
-        optionExists = true;
+    $('#chats').append($chat);
+  },
+  clearMessages: function() {
+    $('#chats').children().remove();
+  },
+  handleSubmit: function() {
+    event.preventDefault()
+
+    let message = {
+      username: app.username,
+      text: $('#msg').val(),
+      roomname: app.roomname,
+    }
+    app.send(message);
+    $('#msg').val('');
+  },
+  addRoom: function(newRoomName) {
+    $('select').append($('<option />').text(newRoomName));
+
+  },
+  changeRoom: function() {
+    let selectedRoom = $('select').val();
+
+    if (selectedRoom === 'Create Room') {
+      newRoomName = prompt('New Room Name:')
+      app.addRoom(newRoomName);
+      $('select').val(newRoomName);
+      app.roomname = newRoomName;
+
+    } else {
+      app.roomname = selectedRoom;
+      app.addMessages(app.messages);
+
+    }
+  },
+  renderRoomNames: function() {
+    let rooms = {lobby: true};
+    app.messages.forEach(function(msg) {
+      if (msg.roomname && !rooms[msg.roomname]) {
+        app.addRoom(msg.roomname);
+        rooms[msg.roomname] = true; 
       }
     });
-    if (!optionExists) {
-      app.addRoom(roomname);
-    }
-  };
+  },
+  addFriend() {
+    console.log($(event.target).data('username'))
+    let username = $(event.target).data('username');
+    if (username !== undefined) {
+         app.friends[username] = !app.friends[username];
+       }
 
-  app.addRoom = function(roomName) {
-    roomName = roomName || ($('.roomSelectText')).val();
-    if (roomName.trim() !== '') {
-      let $room = $('<option></option>').text(roomName).val(roomName);
-      $('#roomSelect').append($room);
-    }
-  };
+       var selector = '[data-username="' + username.replace(/"/g, '\\\"') + '"]';
+       console.log(selector)
+       $('span').find(selector).toggleClass('friend');
+  }
 
-  app.addFriend = function(targetUsername) {
-    console.log(targetUsername);
-  };
-
-
-  app.init();
-
-});
+};
