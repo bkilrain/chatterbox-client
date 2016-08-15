@@ -14,8 +14,12 @@ let app = {
     $('#messageSend').on('submit', app.handleSubmit);
     $('select').on('change', app.changeRoom);
     $('#chats').on('click', '.username', app.addFriend);
+    $('#refresh').on('click', app.refresh);
 
 
+  },
+  refresh: function() {
+    app.fetch();
   },
   send: function(message) {
     $.ajax({
