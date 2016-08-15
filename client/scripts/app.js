@@ -1,4 +1,5 @@
 
+
 let app = {
   server: 'https://api.parse.com/1/classes/messages',
   username: 'anonymous',
@@ -15,7 +16,6 @@ let app = {
     $('select').on('change', app.changeRoom);
     $('#chats').on('click', '.username', app.addFriend);
     $('#refresh').on('click', app.refresh);
-
 
   },
   refresh: function() {
